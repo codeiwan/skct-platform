@@ -336,3 +336,77 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+.text-button {
+  width: 100%;
+  padding: 12px;
+
+  border: none;
+  background: transparent;
+
+  color: #ea002c;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.text-button:hover {
+  text-decoration: underline;
+}
+
+.text-button:focus-visible {
+  outline: 2px solid #ea002c;
+  outline-offset: 2px;
+}
+
+.auth-note {
+  margin: 0;
+
+  color: #777980;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.registration-success {
+  margin-bottom: 28px;
+  padding: 24px;
+
+  border: 1px solid #e8e8ec;
+  border-radius: 10px;
+
+  background: #f8f8fa;
+}
+
+.registration-success h2 {
+  margin: 0 0 12px;
+
+  color: #25262b;
+  font-size: 18px;
+}
+
+.registration-success p {
+  margin: 0 0 24px;
+
+  color: #777980;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.registration-info {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.registration-info span {
+  color: #777980;
+  font-size: 12px;
+}
+
+.registration-info strong {
+  margin-bottom: 8px;
+
+  color: #25262b;
+  font-size: 15px;
+}

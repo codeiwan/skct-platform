@@ -5,7 +5,9 @@ import {
   getCurrentUser,
   login,
   logout,
+  register,
   type CurrentUser,
+  type RegisterResponse,
 } from './api/auth'
 
 
@@ -13,6 +15,17 @@ const app = document.querySelector<HTMLDivElement>('#app')
 
 if (!app) {
   throw new Error('Application root element not found')
+}
+
+
+function getElement<T extends HTMLElement>(id: string): T {
+  const element = document.getElementById(id)
+
+  if (!element) {
+    throw new Error(`Element not found: ${id}`)
+  }
+
+  return element as T
 }
 
 
@@ -25,6 +38,10 @@ function getErrorMessage(error: unknown): string {
 }
 
 
+// --------------------------------------------------
+// 로그인 화면
+// --------------------------------------------------
+
 function renderLogin(initialMessage = ''): void {
   app!.innerHTML = `
     <main class="auth-layout">
@@ -32,21 +49,14 @@ function renderLogin(initialMessage = ''): void {
 
         <header class="auth-header">
           <div class="brand-mark">SKCT</div>
-
           <h1>SKCT Platform</h1>
-
-          <p>
-            Online Examination & Analytics
-          </p>
+          <p>Online Examination & Analytics</p>
         </header>
 
         <form id="login-form" class="auth-form">
 
           <div class="form-field">
-            <label for="skala-id">
-              SKALA 고유번호
-            </label>
-
+            <label for="skala-id">SKALA 고유번호</label>
             <input
               id="skala-id"
               name="skala_id"
@@ -59,10 +69,7 @@ function renderLogin(initialMessage = ''): void {
           </div>
 
           <div class="form-field">
-            <label for="password">
-              비밀번호
-            </label>
-
+            <label for="password">비밀번호</label>
             <input
               id="password"
               name="password"
@@ -88,6 +95,14 @@ function renderLogin(initialMessage = ''): void {
             로그인
           </button>
 
+          <button
+            id="register-link"
+            type="button"
+            class="text-button"
+          >
+            계정이 없으신가요? 회원가입
+          </button>
+
         </form>
 
         <footer class="auth-footer">
@@ -99,30 +114,17 @@ function renderLogin(initialMessage = ''): void {
     </main>
   `
 
-  const form = document.querySelector<HTMLFormElement>(
-    '#login-form',
-  )
-
-  const feedback = document.querySelector<HTMLElement>(
-    '#login-feedback',
-  )
-
-  const submitButton = document.querySelector<HTMLButtonElement>(
-    '#login-button',
-  )
-
-  if (!form || !feedback || !submitButton) {
-    throw new Error('Login form initialization failed')
-  }
+  const form = getElement<HTMLFormElement>('login-form')
+  const feedback = getElement<HTMLElement>('login-feedback')
+  const submitButton = getElement<HTMLButtonElement>('login-button')
+  const registerButton = getElement<HTMLButtonElement>('register-link')
 
   feedback.textContent = initialMessage
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
 
-    if (submitButton.disabled) {
-      return
-    }
+    if (submitButton.disabled) return
 
     const formData = new FormData(form)
 
@@ -149,8 +151,264 @@ function renderLogin(initialMessage = ''): void {
       submitButton.textContent = '로그인'
     }
   })
+
+  registerButton.addEventListener('click', () => {
+    renderRegister()
+  })
 }
 
+
+// --------------------------------------------------
+// 회원가입 화면
+// --------------------------------------------------
+
+function renderRegister(): void {
+  app!.innerHTML = `
+    <main class="auth-layout">
+      <section class="auth-card">
+
+        <header class="auth-header">
+          <div class="brand-mark">SKCT</div>
+          <h1>회원가입</h1>
+          <p>SKCT Platform 계정 생성</p>
+        </header>
+
+        <form id="register-form" class="auth-form">
+
+          <div class="form-field">
+            <label for="register-skala-id">
+              SKALA 고유번호
+            </label>
+            <input
+              id="register-skala-id"
+              name="skala_id"
+              type="text"
+              placeholder="예: G051"
+              autocomplete="username"
+              maxlength="64"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="register-name">이름</label>
+            <input
+              id="register-name"
+              name="name"
+              type="text"
+              placeholder="이름 입력"
+              autocomplete="name"
+              maxlength="100"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="register-password">비밀번호</label>
+            <input
+              id="register-password"
+              name="password"
+              type="password"
+              placeholder="8자 이상 입력"
+              autocomplete="new-password"
+              minlength="8"
+              maxlength="128"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="register-password-confirm">
+              비밀번호 확인
+            </label>
+            <input
+              id="register-password-confirm"
+              name="password_confirm"
+              type="password"
+              placeholder="비밀번호 다시 입력"
+              autocomplete="new-password"
+              minlength="8"
+              maxlength="128"
+              required
+            />
+          </div>
+
+          <p class="auth-note">
+            회원가입 후 관리자 승인이 완료되어야
+            로그인할 수 있습니다.
+          </p>
+
+          <p
+            id="register-feedback"
+            class="feedback"
+            role="alert"
+            aria-live="polite"
+          ></p>
+
+          <button
+            id="register-button"
+            class="primary-button"
+            type="submit"
+          >
+            회원가입 신청
+          </button>
+
+          <button
+            id="back-to-login"
+            class="text-button"
+            type="button"
+          >
+            로그인 화면으로 돌아가기
+          </button>
+
+        </form>
+
+      </section>
+    </main>
+  `
+
+  const form = getElement<HTMLFormElement>('register-form')
+  const feedback = getElement<HTMLElement>('register-feedback')
+  const submitButton = getElement<HTMLButtonElement>('register-button')
+  const backButton = getElement<HTMLButtonElement>('back-to-login')
+
+  backButton.addEventListener('click', () => {
+    renderLogin()
+  })
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault()
+
+    if (submitButton.disabled) return
+
+    const formData = new FormData(form)
+
+    const skalaId = String(
+      formData.get('skala_id') ?? '',
+    ).trim()
+
+    const name = String(
+      formData.get('name') ?? '',
+    ).trim()
+
+    const password = String(
+      formData.get('password') ?? '',
+    )
+
+    const passwordConfirm = String(
+      formData.get('password_confirm') ?? '',
+    )
+
+    feedback.textContent = ''
+
+    if (!skalaId || !name) {
+      feedback.textContent =
+        'SKALA 고유번호와 이름을 입력해 주세요.'
+      return
+    }
+
+    if (password !== passwordConfirm) {
+      feedback.textContent =
+        '비밀번호가 일치하지 않습니다.'
+      return
+    }
+
+    if (password.length < 8 || password.length > 128) {
+      feedback.textContent =
+        '비밀번호는 8~128자로 입력해 주세요.'
+      return
+    }
+
+    submitButton.disabled = true
+    submitButton.textContent = '가입 신청 중...'
+
+    try {
+      const registeredUser = await register({
+        skala_id: skalaId,
+        name,
+        password,
+      })
+
+      renderRegistrationSuccess(registeredUser)
+
+    } catch (error) {
+      feedback.textContent = getErrorMessage(error)
+
+    } finally {
+      submitButton.disabled = false
+      submitButton.textContent = '회원가입 신청'
+    }
+  })
+}
+
+
+// --------------------------------------------------
+// 회원가입 성공 및 승인 대기 화면
+// --------------------------------------------------
+
+function renderRegistrationSuccess(
+  user: RegisterResponse,
+): void {
+  app!.innerHTML = `
+    <main class="auth-layout">
+      <section class="auth-card">
+
+        <header class="auth-header">
+          <div class="brand-mark">SKCT</div>
+
+          <h1>가입 신청 완료</h1>
+          <p>회원가입 신청이 정상적으로 접수되었습니다.</p>
+        </header>
+
+        <div class="registration-success">
+
+          <h2>관리자 승인 대기</h2>
+
+          <p>
+            관리자 승인 후 서비스를 이용할 수 있습니다.
+          </p>
+
+          <div class="registration-info">
+            <span>신청 고유번호</span>
+            <strong id="registered-skala-id"></strong>
+
+            <span>계정 상태</span>
+            <strong>PENDING</strong>
+          </div>
+
+        </div>
+
+        <button
+          id="registration-login-button"
+          class="primary-button"
+          type="button"
+        >
+          로그인 화면으로 돌아가기
+        </button>
+
+      </section>
+    </main>
+  `
+
+  const registeredId = getElement<HTMLElement>(
+    'registered-skala-id',
+  )
+
+  registeredId.textContent = user.skala_id
+
+  const loginButton = getElement<HTMLButtonElement>(
+    'registration-login-button',
+  )
+
+  loginButton.addEventListener('click', () => {
+    renderLogin()
+  })
+}
+
+
+// --------------------------------------------------
+// 로그인 후 대시보드
+// --------------------------------------------------
 
 function renderDashboard(user: CurrentUser): void {
   app!.innerHTML = `
@@ -210,25 +468,11 @@ function renderDashboard(user: CurrentUser): void {
     </main>
   `
 
-  const title = document.querySelector<HTMLElement>(
-    '#welcome-title',
-  )!
-
-  const accountId = document.querySelector<HTMLElement>(
-    '#account-id',
-  )!
-
-  const roleBadge = document.querySelector<HTMLElement>(
-    '#role-badge',
-  )!
-
-  const sectionTitle = document.querySelector<HTMLElement>(
-    '#section-title',
-  )!
-
-  const sectionDescription = document.querySelector<HTMLElement>(
-    '#section-description',
-  )!
+  const title = getElement<HTMLElement>('welcome-title')
+  const accountId = getElement<HTMLElement>('account-id')
+  const roleBadge = getElement<HTMLElement>('role-badge')
+  const sectionTitle = getElement<HTMLElement>('section-title')
+  const sectionDescription = getElement<HTMLElement>('section-description')
 
   title.textContent = `${user.name}님, 환영합니다.`
   accountId.textContent = user.skala_id
@@ -245,13 +489,13 @@ function renderDashboard(user: CurrentUser): void {
     ? '관리자 기능은 다음 개발 단계에서 추가됩니다.'
     : '시험 응시 및 성적관리 기능은 추후 추가됩니다.'
 
-  const logoutButton = document.querySelector<HTMLButtonElement>(
-    '#logout-button',
-  )!
+  const logoutButton = getElement<HTMLButtonElement>(
+    'logout-button',
+  )
 
-  const feedback = document.querySelector<HTMLElement>(
-    '#logout-feedback',
-  )!
+  const feedback = getElement<HTMLElement>(
+    'logout-feedback',
+  )
 
   logoutButton.addEventListener('click', async () => {
     logoutButton.disabled = true
@@ -268,6 +512,10 @@ function renderDashboard(user: CurrentUser): void {
   })
 }
 
+
+// --------------------------------------------------
+// 애플리케이션 초기화
+// --------------------------------------------------
 
 async function initializeApp(): Promise<void> {
   app!.innerHTML = `

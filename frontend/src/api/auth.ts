@@ -11,6 +11,19 @@ export interface LoginRequest {
   password: string
 }
 
+export interface RegisterRequest {
+  skala_id: string
+  name: string
+  password: string
+}
+
+export interface RegisterResponse {
+  id: number
+  skala_id: string
+  name: string
+  status: 'PENDING'
+}
+
 export class ApiError extends Error {
   public readonly status: number
 
@@ -58,6 +71,21 @@ export async function login(
   })
 
   return handleResponse<CurrentUser>(response)
+}
+
+export async function register(
+  data: RegisterRequest,
+): Promise<RegisterResponse> {
+  const response = await fetch('/api/auth/register', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+
+  return handleResponse<RegisterResponse>(response)
 }
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
