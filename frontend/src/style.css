@@ -1,0 +1,103 @@
+:root {
+  font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+  color: #25262b;
+  background: #f5f5f7;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.container {
+  width: min(100% - 32px, 800px);
+  margin: 80px auto;
+}
+
+header {
+  margin-bottom: 32px;
+}
+
+h1 {
+  margin: 0;
+  color: #ea002c;
+  font-size: 36px;
+  font-weight: 800;
+}
+
+header p {
+  margin-top: 8px;
+  color: #777980;
+}
+
+.card {
+  padding: 32px;
+  background: white;
+  border: 1px solid #e8e8ec;
+  border-radius: 12px;
+}
+
+h2 {
+  margin: 0 0 24px;
+  font-size: 20px;
+}
+
+.status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.status-label {
+  font-weight: 600;
+}
+
+.connected {
+  color: #16803c;
+  font-weight: 600;
+}
+
+.disconnected {
+  color: #ea002c;
+  font-weight: 600;
+}
+
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #ea002c;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #c90026;
+}
+
+@media (max-width: 600px) {
+  .container {
+    margin: 40px auto;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .status {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
