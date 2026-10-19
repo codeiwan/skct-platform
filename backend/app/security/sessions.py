@@ -5,7 +5,13 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Request, Response
+from fastapi import (
+    Depends,
+    Header,
+    HTTPException,
+    Request,
+    Response,
+)
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -119,14 +125,15 @@ def get_current_session(
 
 
 def require_csrf(
-    request: Request,
     session: Annotated[
         AuthSession,
         Depends(get_current_session),
     ],
+    supplied_token: Annotated[
+        str | None,
+        Header(alias="X-CSRF-Token"),
+    ] = None,
 ) -> None:
-
-    supplied_token = request.headers.get("X-CSRF-Token")
 
     if not supplied_token or not secrets.compare_digest(
         supplied_token,
