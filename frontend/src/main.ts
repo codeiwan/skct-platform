@@ -1,4 +1,5 @@
 import './style.css'
+import { mountAdminApprovals } from './pages/admin-approvals'
 
 import {
   ApiError,
@@ -451,10 +452,12 @@ function renderDashboard(user: CurrentUser): void {
           </div>
         </div>
 
-        <div class="placeholder-section">
+        <div id="dashboard-placeholder" class="placeholder-section">
           <h2 id="section-title"></h2>
           <p id="section-description"></p>
         </div>
+
+        <div id="admin-approvals" hidden></div>
 
         <p
           id="logout-feedback"
@@ -486,8 +489,23 @@ function renderDashboard(user: CurrentUser): void {
     : '나의 학습 공간'
 
   sectionDescription.textContent = isAdmin
-    ? '관리자 기능은 다음 개발 단계에서 추가됩니다.'
+    ? '회원가입 승인 요청을 관리할 수 있습니다.'
     : '시험 응시 및 성적관리 기능은 추후 추가됩니다.'
+
+  if (isAdmin) {
+    const placeholder = getElement<HTMLElement>(
+      'dashboard-placeholder',
+    )
+
+    const adminContainer = getElement<HTMLElement>(
+      'admin-approvals',
+    )
+
+    placeholder.hidden = true
+    adminContainer.hidden = false
+
+    mountAdminApprovals(adminContainer)
+  }
 
   const logoutButton = getElement<HTMLButtonElement>(
     'logout-button',

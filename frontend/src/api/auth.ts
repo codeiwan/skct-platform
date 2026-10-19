@@ -101,7 +101,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   return handleResponse<CurrentUser>(response)
 }
 
-async function getCsrfToken(): Promise<string> {
+export async function getCsrfToken(): Promise<string> {
   const response = await fetch('/api/auth/csrf', {
     credentials: 'same-origin',
     cache: 'no-store',
