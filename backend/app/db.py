@@ -56,3 +56,12 @@ SessionLocal = sessionmaker(
     autoflush=False,
     expire_on_commit=False,
 )
+
+from collections.abc import Iterator
+
+from sqlalchemy.orm import Session
+
+
+def get_db() -> Iterator[Session]:
+    with SessionLocal() as session:
+        yield session
