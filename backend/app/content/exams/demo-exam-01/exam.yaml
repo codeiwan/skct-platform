@@ -1,0 +1,37 @@
+code: demo-exam-01
+book_title: "DEMO SKCT 문제집"
+publisher: "테스트 전용"
+title: "DEMO 실전 모의고사 1회"
+content_version: 1
+pdf_filename: questions.pdf
+
+sections:
+  - section_number: 1
+    section_type: 언어이해
+    start_page: 1
+    question_count: 20
+    duration_seconds: 900
+
+  - section_number: 2
+    section_type: 자료해석
+    start_page: 17
+    question_count: 20
+    duration_seconds: 900
+
+  - section_number: 3
+    section_type: 창의수리
+    start_page: 35
+    question_count: 20
+    duration_seconds: 900
+
+  - section_number: 4
+    section_type: 언어추리
+    start_page: 41
+    question_count: 20
+    duration_seconds: 900
+
+  - section_number: 5
+    section_type: 수열추리
+    start_page: 51
+    question_count: 20
+    duration_seconds: 900
