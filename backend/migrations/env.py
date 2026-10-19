@@ -8,6 +8,7 @@ from app.db import (
     create_db_engine,
 )
 
+from app import models  # noqa: F401
 
 config = context.config
 
