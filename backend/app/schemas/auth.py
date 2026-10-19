@@ -41,3 +41,38 @@ class RegisterResponse(BaseModel):
     skala_id: str
     name: str
     status: Literal["PENDING"]
+
+
+class LoginRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    skala_id: str = Field(min_length=1, max_length=64)
+    password: str = Field(min_length=1, max_length=128)
+
+    @field_validator("skala_id", mode="before")
+    @classmethod
+    def strip_skala_id(cls, value: object) -> object:
+        if isinstance(value, str):
+            return value.strip()
+        return value
+
+    @field_validator("skala_id")
+    @classmethod
+    def validate_skala_id(cls, value: str) -> str:
+        if len(value.casefold()) > 64:
+            raise ValueError(
+                "SKALA 고유번호가 너무 깁니다."
+            )
+        return value
+
+
+class UserResponse(BaseModel):
+    id: int
+    skala_id: str
+    name: str
+    role: Literal["USER", "ADMIN"]
+    status: Literal["ACTIVE"]
+
+
+class CsrfResponse(BaseModel):
+    csrf_token: str
