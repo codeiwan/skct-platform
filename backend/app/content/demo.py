@@ -29,7 +29,7 @@ def create_demo_exam(folder: Path) -> None:
             {
                 "section_number": index,
                 "section_type": section_type,
-                "start_page": 2 + (index - 1) * 8,
+                "start_page": [1, 17, 35, 41, 51][index - 1],
                 "question_count": 20,
                 "duration_seconds": 900,
             }
@@ -81,7 +81,7 @@ def create_demo_exam(folder: Path) -> None:
     # 테스트 전용 빈 PDF: 실제 문제는 포함하지 않음
     pdf = PdfWriter()
 
-    for _ in range(40):
+    for _ in range(56):
         pdf.add_blank_page(
             width=595,
             height=842,

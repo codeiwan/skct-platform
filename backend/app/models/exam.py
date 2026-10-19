@@ -93,6 +93,11 @@ class Exam(Base):
         nullable=True,
     )
 
+    pdf_sha256: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
