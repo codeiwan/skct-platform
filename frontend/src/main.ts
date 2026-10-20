@@ -1,5 +1,7 @@
+
 import './style.css'
 import { mountAdminApprovals } from './pages/admin-approvals'
+import { mountExamCatalog } from './pages/exam-catalog'
 
 import {
   ApiError,
@@ -468,6 +470,12 @@ function renderDashboard(user: CurrentUser): void {
 
       </section>
 
+      <section
+        id="exam-catalog"
+        class="exam-catalog"
+        aria-label="공식 모의고사 목록"
+      ></section>
+
     </main>
   `
 
@@ -492,6 +500,7 @@ function renderDashboard(user: CurrentUser): void {
     ? '회원가입 승인 요청을 관리할 수 있습니다.'
     : '시험 응시 및 성적관리 기능은 추후 추가됩니다.'
 
+  // 관리자 전용 회원 승인 관리 화면
   if (isAdmin) {
     const placeholder = getElement<HTMLElement>(
       'dashboard-placeholder',
@@ -507,6 +516,14 @@ function renderDashboard(user: CurrentUser): void {
     mountAdminApprovals(adminContainer)
   }
 
+  // 일반 사용자와 관리자 모두에게 공개 시험 목록 표시
+  const examCatalogRoot = getElement<HTMLElement>(
+    'exam-catalog',
+  )
+
+  mountExamCatalog(examCatalogRoot)
+
+  // 로그아웃
   const logoutButton = getElement<HTMLButtonElement>(
     'logout-button',
   )
