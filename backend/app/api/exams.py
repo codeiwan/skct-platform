@@ -1,14 +1,21 @@
+import re
 from collections import defaultdict
+from pathlib import Path
+
+from app.content.importer import STORAGE_ROOT, package_path, verify_exam_pdf
+from app.db import get_db
+from app.models import Exam, ExamBook, ExamSection
+from app.security.sessions import get_current_session
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db import get_db
-from app.models import Exam, ExamBook, ExamSection
 
-from app.security.sessions import get_current_session
+def get_exam_storage_root() -> Path:
+    return STORAGE_ROOT
 
 
 router = APIRouter(
@@ -183,4 +190,82 @@ def get_exam_detail(
             for section in detail_sections
         ),
         sections=detail_sections,
+    )
+
+
+@router.get(
+    "/{exam_code}/pdf",
+    response_class=FileResponse,
+    responses={
+        200: {
+            "content": {
+                "application/pdf": {},
+            },
+            "description": "인증된 사용자의 시험 PDF 열람",
+        },
+        401: {"description": "로그인 필요"},
+        404: {"description": "공개된 시험 없음"},
+        503: {"description": "PDF 무결성 오류"},
+    },
+)
+def get_exam_pdf(
+    exam_code: str,
+    db: Session = Depends(get_db),
+    _session=Depends(get_current_session),
+    storage_root: Path = Depends(get_exam_storage_root),
+) -> FileResponse:
+
+    # 공개된 시험만 조회
+    exam = db.scalar(
+        select(Exam).where(
+            Exam.code == exam_code,
+            Exam.status == "PUBLISHED",
+        )
+    )
+
+    if exam is None:
+        raise HTTPException(
+            status_code=404,
+            detail="시험을 찾을 수 없습니다.",
+        )
+
+    # 서버 보관 경로에 사용할 코드 검증
+    if re.fullmatch(
+        r"[a-z0-9][a-z0-9_-]{0,63}",
+        exam.code,
+    ) is None:
+        raise HTTPException(
+            status_code=503,
+            detail="시험 PDF를 사용할 수 없습니다.",
+        )
+
+    # 파일 존재 여부와 SHA-256 무결성 확인
+    try:
+        pdf_valid = verify_exam_pdf(
+            exam,
+            storage_root,
+        )
+    except OSError:
+        pdf_valid = False
+
+    if not pdf_valid:
+        raise HTTPException(
+            status_code=503,
+            detail="시험 PDF를 사용할 수 없습니다.",
+        )
+
+    pdf_path = package_path(
+        exam,
+        storage_root,
+    )
+
+    return FileResponse(
+        path=pdf_path,
+        media_type="application/pdf",
+        filename="questions.pdf",
+        content_disposition_type="inline",
+        headers={
+            "Cache-Control": "private, no-store, max-age=0",
+            "X-Content-Type-Options": "nosniff",
+        },
     )
