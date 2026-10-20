@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -32,6 +32,25 @@ class ExamCatalogItem(BaseModel):
     total_questions: int
     total_duration_seconds: int
     sections: list[ExamSectionSummary]
+
+
+class ExamDetailSection(BaseModel):
+    section_number: int
+    section_type: str
+    start_page: int
+    question_count: int
+    duration_seconds: int
+
+
+class ExamDetail(BaseModel):
+    code: str
+    title: str
+    book_title: str
+    publisher: str | None
+    content_version: int
+    total_questions: int
+    total_duration_seconds: int
+    sections: list[ExamDetailSection]
 
 
 @router.get(
@@ -103,3 +122,65 @@ def list_published_exams(
         )
 
     return results
+
+
+@router.get(
+    "/{exam_code}",
+    response_model=ExamDetail,
+)
+def get_exam_detail(
+    exam_code: str,
+    db: Session = Depends(get_db),
+    _session=Depends(get_current_session),
+) -> ExamDetail:
+
+    row = db.execute(
+        select(Exam, ExamBook)
+        .join(ExamBook, Exam.book_id == ExamBook.id)
+        .where(
+            Exam.code == exam_code,
+            Exam.status == "PUBLISHED",
+        )
+    ).one_or_none()
+
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail="시험을 찾을 수 없습니다.",
+        )
+
+    exam, book = row
+
+    sections = db.scalars(
+        select(ExamSection)
+        .where(ExamSection.exam_id == exam.id)
+        .order_by(ExamSection.section_number)
+    ).all()
+
+    detail_sections = [
+        ExamDetailSection(
+            section_number=section.section_number,
+            section_type=section.section_type,
+            start_page=section.start_page,
+            question_count=section.question_count,
+            duration_seconds=section.duration_seconds,
+        )
+        for section in sections
+    ]
+
+    return ExamDetail(
+        code=exam.code,
+        title=exam.title,
+        book_title=book.title,
+        publisher=book.publisher,
+        content_version=exam.content_version,
+        total_questions=sum(
+            section.question_count
+            for section in detail_sections
+        ),
+        total_duration_seconds=sum(
+            section.duration_seconds
+            for section in detail_sections
+        ),
+        sections=detail_sections,
+    )
